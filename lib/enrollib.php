@@ -767,6 +767,23 @@ function enrol_user_sees_own_courses($user = null) {
 }
 
 /**
+ * Returns common courses of two users are enrolled into without any capability checks (jbasco - 2016.11)
+ *
+ * @param int $userid1
+ * @param int $userid2
+ * @param bool $onlyactive return only active enrolments in courses user may see
+ * @param string|array $fields
+ * @param string $sort
+ * @return array
+ */
+function enrol_get_all_users_common_courses(
+        $userid1, $userid2, $onlyactive = false, $fields = null, $sort = 'visible DESC,sortorder ASC') {
+    $userid1courses = enrol_get_all_users_courses($userid1, $onlyactive, $fields, $sort);
+    $userid2courses = enrol_get_all_users_courses($userid2, $onlyactive, $fields, $sort);
+    return array_intersect_key($userid1courses, $userid2courses);
+}
+
+/**
  * Returns list of courses user is enrolled into without any capability checks
  * - $fields is an array of fieldnames to ADD
  *   so name the fields you really need, which will

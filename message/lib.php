@@ -2169,6 +2169,18 @@ function message_print_message_history($user1, $user2 ,$search = '', $messagelim
     echo $OUTPUT->box_end();
     echo $OUTPUT->box_end();
     echo $OUTPUT->box_end();
+    // Common courses !
+    $commoncourses = enrol_get_all_users_common_courses($user1->id, $user2->id);
+    if (count($commoncourses) > 0) {
+        $commoncoursestxt = get_string('sharingcourses', 'message').': ';
+        $separator = '';
+        foreach ($commoncourses as $commoncourse) {
+            $commoncourseslink = new moodle_url('/course/view.php', array('id' => $commoncourse->id));
+            $commoncoursestxt .= $separator . html_writer::link($commoncourseslink, $commoncourse->fullname);
+            $separator = ', ';
+        }
+        echo html_writer::div($commoncoursestxt, "mdl-align");
+    }
 
     if (!empty($messagehistorylink)) {
         echo $messagehistorylink;
@@ -2349,7 +2361,31 @@ function message_post_message($userfrom, $userto, $message, $format) {
         $eventdata->fullmessage .= "\n\n---------------------------------------------------------------------\n".$emailtagline;
     }
     if (!empty($eventdata->fullmessagehtml)) {
-        $eventdata->fullmessagehtml .= "<br /><br />---------------------------------------------------------------------<br />".$emailtagline;
+        $eventdata->fullmessagehtml .= "<p><hr /></p>".$emailtagline;
+    }
+
+    // Common courses !
+    $commoncourses = enrol_get_all_users_common_courses($userfrom->id, $userto->id);
+    if (count($commoncourses) > 0) {
+        if ($format == FORMAT_HTML) {
+            $eventdata->fullmessagehtml .= "<p><hr /></p>";
+            $eventdata->fullmessagehtml .= fullname($userfrom).' '.get_string('sharedcourses', 'message').':';
+            $eventdata->fullmessagehtml .= '<ul>';
+            foreach ($commoncourses as $commoncourse) {
+                $commoncourselink = new moodle_url('/course/view.php', array('id' => $commoncourse->id));
+                $commoncoursetxt = html_writer::link($commoncourselink, $commoncourse->fullname);
+                $eventdata->fullmessagehtml .= html_writer::tag('li', $commoncoursetxt);
+            }
+            $eventdata->fullmessagehtml .= '</ul>';
+        } else {
+            $eventdata->fullmessage .= "\n\n---------------------------------------------------------------------\n";
+            $eventdata->fullmessage .= "\n".fullname($userfrom).' '.get_string('sharedcourses', 'message').":\n";
+            foreach ($commoncourses as $commoncourse) {
+                $eventdata->fullmessage .= '  - '.$commoncourse->fullname."\n";
+                $commoncourselink = new moodle_url('/course/view.php', array('id' => $commoncourse->id));
+                $eventdata->fullmessage .= '    ('.$commoncourselink.")\n";
+            }
+        }
     }
 
     $eventdata->timecreated     = time();
