@@ -20,6 +20,7 @@ use quizaccess_seb\seb_access_manager;
 use quizaccess_seb\seb_quiz_settings;
 use quizaccess_seb\settings_provider;
 use quizaccess_seb\event\access_prevented;
+use quizaccess_seb\hook\seb_save_form_settings_hook;
 
 /**
  * Implementation of the quizaccess_seb plugin.
@@ -194,6 +195,10 @@ class quizaccess_seb extends access_rule_base {
         } else {
             settings_provider::delete_uploaded_config_file($cm->id);
         }
+
+        // Dispatch a hook for plugins to save their settings.
+        $hook = new seb_save_form_settings_hook($quiz);
+        \core\di::get(\core\hook\manager::class)->dispatch($hook);
 
         // Save or delete settings.
         if ($quizsettings->get('requiresafeexambrowser') != settings_provider::USE_SEB_NO) {

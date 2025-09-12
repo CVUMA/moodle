@@ -34,6 +34,7 @@ use context_user;
 use lang_string;
 use stdClass;
 use stored_file;
+use quizaccess_seb\hook\seb_add_form_settings_hook;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -358,6 +359,19 @@ class settings_provider {
             self::add_seb_allowedbrowserexamkeys($quizform, $mform);
             self::hide_seb_elements($quizform, $mform);
             self::lock_seb_elements($quizform, $mform);
+
+            // Dispatch a hook for plugins to add their settings fields.
+            $cmid = !empty($quizform->get_coursemodule()) ? $quizform->get_coursemodule()->id : 0;
+            $hook = new seb_add_form_settings_hook(
+                $mform,
+                $quizform->get_course(),
+                $cmid,
+                [['fieldname' => 'seb_requiresafeexambrowser', 'condition' => 'neq', 'value' => self::USE_SEB_CONFIG_MANUALLY]],
+                'security'
+                );
+
+            \core\di::get(\core\hook\manager::class)->dispatch($hook);
+
         }
     }
 

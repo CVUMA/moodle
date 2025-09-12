@@ -1,0 +1,12 @@
+.allowed_activity {
+    margin-bottom: 0.3em;
+}
+
+body#page-local-sebprogram-delete .btn,
+body#page-local-sebprogram-delete .singlebutton {
+  width: 100%;
+}
+
+[data-groupname="allowedprograms_group"] .fitem {
+    max-width: 45%;
+}

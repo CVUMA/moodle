@@ -34,6 +34,7 @@ use core\persistent;
 use lang_string;
 use moodle_exception;
 use moodle_url;
+use quizaccess_seb\hook\seb_add_settings_to_config_hook;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -339,6 +340,14 @@ class seb_quiz_settings extends persistent {
     }
 
     /**
+     * Generate seb config files from settings.
+     */
+    public function regenerate_config() {
+        $key = $this->get('quizid');
+        self::get_config_cache()->delete($key);
+    }
+
+    /**
      * Get the browser exam keys as a pre-split array instead of just as a string.
      *
      * @return array
@@ -467,6 +476,10 @@ class seb_quiz_settings extends persistent {
         $this->process_quit_url_from_settings();
         $this->process_url_filters();
         $this->process_required_enforced_settings();
+
+        // Dispatch a hook for plugins to add their settings to config PList.
+        $hook = new seb_add_settings_to_config_hook($this->plist, $this->get('cmid'));
+        \core\di::get(\core\hook\manager::class)->dispatch($hook);
 
         // One of the requirements for USE_SEB_CONFIG_MANUALLY is setting examSessionClearCookiesOnStart to false.
         $this->plist->set_or_update_value('examSessionClearCookiesOnStart', new CFBoolean(false));
