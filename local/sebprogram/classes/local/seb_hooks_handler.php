@@ -115,8 +115,12 @@ class seb_hooks_handler {
 
         $manager = new program_manager();
 
-        $selectedprograms = $hook->data->allowed_programs;
-        $currentprograms = array_keys($manager->get_allowed_programs($hook->data->coursemodule));
+        $selectedprograms = isset($hook->data->allowed_programs) && is_array($hook->data->allowed_programs)
+            ? $hook->data->allowed_programs
+            : [];
+        $currentprograms = ($manager->get_allowed_programs($hook->data->coursemodule) !== null)
+            ? array_keys($manager->get_allowed_programs($hook->data->coursemodule))
+            : [];
 
         $addprgrams = array_diff($selectedprograms, $currentprograms);
         $deleteprgrams = array_diff($currentprograms, $selectedprograms);
